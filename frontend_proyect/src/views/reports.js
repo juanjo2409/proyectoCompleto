@@ -39,7 +39,7 @@ export function mostrarReportes(state) {
   const transactions = state.transactions;
   const esOscuro = document.documentElement.classList.contains('dark');
   const colorTexto = esOscuro ? '#94a3b8' : '#64748b';
-  const colorRejilla = esOscuro ? '#334155' : '#f1f5f9';
+  const colorRejilla = esOscuro ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)';
 
   // Obtener la lista única de años disponibles en las transacciones para el select
   let listaAnios = [];
@@ -96,7 +96,7 @@ export function mostrarReportes(state) {
   const donaDatos = Object.values(totalesCategorias);
 
   // --- 3. PROCESAR DATOS: Evolución de Saldo Histórico ---
-  const txsOrdenadas = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const txsOrdenadas = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date) || new Date(a.created_at || a.createdAt) - new Date(b.created_at || b.createdAt));
   const historicoEtiquetas = [];
   const historicoDatos = [];
   let saldoAcumulado = 0;
@@ -116,75 +116,77 @@ export function mostrarReportes(state) {
   destruirGraficosActivos();
 
   container.innerHTML = `
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Reportes y Estadísticas</h1>
-        <p class="text-sm text-slate-500">Visualiza el flujo de tu dinero mediante gráficos interactivos.</p>
-      </div>
-      
-      <!-- Selectores de Fecha -->
-      <div class="flex gap-3 self-start md:self-auto">
+    <div class="animate-fade-in-up space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <select id="report-month" onchange="cambiarPeriodoReporte('report-month', this.value)" class="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 focus:outline-none">
-            ${nombresMeses.map((m, idx) => `<option value="${idx + 1}" ${mesSeleccionado === (idx + 1) ? 'selected' : ''}>${m}</option>`).join('')}
-          </select>
+          <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Reportes y Estadísticas</h1>
+          <p class="text-xs text-slate-500">Visualiza el flujo de tu dinero mediante gráficos interactivos.</p>
         </div>
         
-        <div>
-          <select id="report-year" onchange="cambiarPeriodoReporte('report-year', this.value)" class="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 focus:outline-none">
-            ${listaAnios.map(y => `<option value="${y}" ${anioSeleccionado === y ? 'selected' : ''}>${y}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Grid de Gráficos -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
-      <!-- Gráfico 1: Comparativo Ingresos vs Gastos -->
-      <div class="p-6 rounded-2xl glass-panel space-y-4">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Ingresos vs Gastos (${anioSeleccionado})</h3>
-          <p class="text-[11px] text-slate-500 font-medium">Comparativa mensual del año seleccionado.</p>
-        </div>
-        <div class="relative w-full h-[280px]">
-          <canvas id="canvas-barras"></canvas>
-        </div>
-      </div>
-
-      <!-- Gráfico 2: Distribución por Categorías -->
-      <div class="p-6 rounded-2xl glass-panel space-y-4">
-        <div>
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Gastos del Mes</h3>
-            <span class="text-xs font-bold text-slate-700 bg-slate-50 border dark:bg-slate-900 dark:border-slate-850 px-2.5 py-0.5 rounded-full">
-              Total: ${formatearMoneda(totalGastadoEnMes, state.summary.currency)}
-            </span>
+        <!-- Selectores de Fecha -->
+        <div class="flex gap-2.5 self-start md:self-auto">
+          <div>
+            <select id="report-month" onchange="cambiarPeriodoReporte('report-month', this.value)" class="w-full text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-750 dark:text-slate-200 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500/20 cursor-pointer">
+              ${nombresMeses.map((m, idx) => `<option value="${idx + 1}" ${mesSeleccionado === (idx + 1) ? 'selected' : ''}>${m}</option>`).join('')}
+            </select>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium">Distribución por categoría en ${nombresMeses[mesSeleccionado - 1]}.</p>
-        </div>
-        <div class="relative w-full h-[280px] flex items-center justify-center">
-          ${donaDatos.length > 0 
-            ? `<canvas id="canvas-dona"></canvas>` 
-            : `<p class="text-xs text-slate-550 py-12">No hay gastos en este mes.</p>`
-          }
-        </div>
-      </div>
-
-      <!-- Gráfico 3: Histórico de Saldo -->
-      <div class="lg:col-span-2 p-6 rounded-2xl glass-panel space-y-4">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Evolución de Saldo Neto Acumulado</h3>
-          <p class="text-[11px] text-slate-500 font-medium">Evolución histórica total de tu balance.</p>
-        </div>
-        <div class="relative w-full h-[300px]">
-          ${historicoDatos.length > 0
-            ? `<canvas id="canvas-linea"></canvas>`
-            : `<p class="text-xs text-slate-555 text-center py-16">Registra transacciones para ver la evolución.</p>`
-          }
+          
+          <div>
+            <select id="report-year" onchange="cambiarPeriodoReporte('report-year', this.value)" class="w-full text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-750 dark:text-slate-200 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500/20 cursor-pointer">
+              ${listaAnios.map(y => `<option value="${y}" ${anioSeleccionado === y ? 'selected' : ''}>${y}</option>`).join('')}
+            </select>
+          </div>
         </div>
       </div>
 
+      <!-- Grid de Gráficos -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Gráfico 1: Comparativo Ingresos vs Gastos -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Ingresos vs Gastos (${anioSeleccionado})</h3>
+            <p class="text-[10px] text-slate-500 font-medium">Comparativa mensual del año seleccionado.</p>
+          </div>
+          <div class="relative w-full h-[280px]">
+            <canvas id="canvas-barras"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 2: Distribución por Categorías -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Gastos del Mes</h3>
+              <span class="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 dark:text-emerald-400 px-2.5 py-0.5 rounded-lg">
+                Total: ${formatearMoneda(totalGastadoEnMes, state.summary.currency)}
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-medium">Distribución por categoría en ${nombresMeses[mesSeleccionado - 1]}.</p>
+          </div>
+          <div class="relative w-full h-[280px] flex items-center justify-center">
+            ${donaDatos.length > 0 
+              ? `<canvas id="canvas-dona"></canvas>` 
+              : `<p class="text-xs text-slate-500 py-12">No hay gastos registrados en este mes.</p>`
+            }
+          </div>
+        </div>
+
+        <!-- Gráfico 3: Histórico de Saldo -->
+        <div class="lg:col-span-2 p-6 rounded-2xl glass-panel space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Evolución de Saldo Neto Acumulado</h3>
+            <p class="text-[10px] text-slate-500 font-medium">Evolución histórica total de tu balance.</p>
+          </div>
+          <div class="relative w-full h-[300px]">
+            ${historicoDatos.length > 0
+              ? `<canvas id="canvas-linea"></canvas>`
+              : `<p class="text-xs text-slate-500 text-center py-16">Registra transacciones para ver la evolución.</p>`
+            }
+          </div>
+        </div>
+
+      </div>
     </div>
   `;
 
@@ -205,6 +207,20 @@ function inicializarGraficos(
   historicoEtiquetas, historicoDatos,
   colorTexto, colorRejilla
 ) {
+  const esOscuro = document.documentElement.classList.contains('dark');
+  const tooltipStyle = {
+    backgroundColor: esOscuro ? '#0f172a' : '#ffffff',
+    titleColor: esOscuro ? '#ffffff' : '#0f172a',
+    bodyColor: esOscuro ? '#94a3b8' : '#475569',
+    borderColor: esOscuro ? '#334155' : '#e2e8f0',
+    borderWidth: 1,
+    padding: 10,
+    cornerRadius: 12,
+    titleFont: { family: 'Outfit', size: 12, weight: 'bold' },
+    bodyFont: { family: 'Outfit', size: 12 },
+    displayColors: true
+  };
+
   // 1. Gráfico de Barras
   const elBarras = document.getElementById('canvas-barras');
   if (elBarras) {
@@ -213,19 +229,23 @@ function inicializarGraficos(
       data: {
         labels: nombresMeses,
         datasets: [
-          { label: 'Ingresos', data: ingresosMensuales, backgroundColor: '#10b981', borderRadius: 5, maxBarThickness: 12 },
-          { label: 'Gastos', data: gastosMensuales, backgroundColor: '#f43f5e', borderRadius: 5, maxBarThickness: 12 }
+          { label: 'Ingresos', data: ingresosMensuales, backgroundColor: '#10b981', borderRadius: 4, maxBarThickness: 10 },
+          { label: 'Gastos', data: gastosMensuales, backgroundColor: '#f43f5e', borderRadius: 4, maxBarThickness: 10 }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: colorTexto, font: { family: 'Outfit', size: 11 } } }
+          legend: { labels: { color: colorTexto, font: { family: 'Outfit', size: 11, weight: '600' } } },
+          tooltip: tooltipStyle
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: colorTexto, font: { family: 'Outfit', size: 10 } } },
-          y: { grid: { color: colorRejilla }, ticks: { color: colorTexto, font: { family: 'Outfit', size: 10 } } }
+          y: { 
+            grid: { color: colorRejilla, borderDash: [5, 5] }, 
+            ticks: { color: colorTexto, font: { family: 'Outfit', size: 10 } } 
+          }
         }
       }
     });
@@ -241,18 +261,27 @@ function inicializarGraficos(
         labels: donaEtiquetas,
         datasets: [{
           data: donaDatos,
-          backgroundColor: ['#f43f5e', '#f59e0b', '#3b82f6', '#8b5cf6', '#6366f1', '#94a3b8'],
-          borderWidth: 2,
-          borderColor: document.documentElement.classList.contains('dark') ? '#020617' : '#ffffff'
+          backgroundColor: ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#fb923c', '#eab308', '#10b981', '#3b82f6'],
+          borderWidth: 2.5,
+          borderColor: esOscuro ? '#020617' : '#ffffff',
+          borderRadius: 4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'right', labels: { color: colorTexto, font: { family: 'Outfit', size: 11 } } }
+          legend: { 
+            position: 'right', 
+            labels: { 
+              color: colorTexto, 
+              font: { family: 'Outfit', size: 10.5, weight: '600' },
+              padding: 12
+            } 
+          },
+          tooltip: tooltipStyle
         },
-        cutout: '60%'
+        cutout: '68%'
       }
     });
     listaGraficos.push(chart);
@@ -261,6 +290,13 @@ function inicializarGraficos(
   // 3. Gráfico de Línea
   const elLinea = document.getElementById('canvas-linea');
   if (elLinea && historicoDatos.length > 0) {
+    const ctx = elLinea.getContext('2d');
+    
+    // Crear gradiente de fondo premium
+    const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.28)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.005)');
+
     const chart = new Chart(elLinea, {
       type: 'line',
       data: {
@@ -268,22 +304,32 @@ function inicializarGraficos(
         datasets: [{
           label: 'Saldo Acumulado',
           data: historicoDatos,
-          borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139, 92, 246, 0.04)',
-          borderWidth: 3,
+          borderColor: '#6366f1',
+          backgroundColor: gradient,
+          borderWidth: 3.5,
           fill: true,
-          tension: 0.3,
-          pointBackgroundColor: '#8b5cf6',
-          pointRadius: 3
+          tension: 0.35,
+          pointBackgroundColor: '#6366f1',
+          pointHoverBackgroundColor: '#4f46e5',
+          pointBorderColor: esOscuro ? '#020617' : '#ffffff',
+          pointBorderWidth: 1.5,
+          pointRadius: 3.5,
+          pointHoverRadius: 6
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { 
+          legend: { display: false },
+          tooltip: tooltipStyle
+        },
         scales: {
-          x: { grid: { display: false }, ticks: { color: colorTexto, font: { family: 'Outfit', size: 10 } } },
-          y: { grid: { color: colorRejilla }, ticks: { color: colorTexto, font: { family: 'Outfit', size: 10 } } }
+          x: { grid: { display: false }, ticks: { color: colorTexto, font: { family: 'Outfit', size: 9.5 } } },
+          y: { 
+            grid: { color: colorRejilla, borderDash: [5, 5] }, 
+            ticks: { color: colorTexto, font: { family: 'Outfit', size: 9.5 } } 
+          }
         }
       }
     });

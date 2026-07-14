@@ -1,7 +1,7 @@
 // Capa de API Simplificada - Nivel Estudiante (Funciones Simples)
 
-const usarMock = false;
-const apiUrl = 'http://localhost:8001/api/v1';
+const usarMock = localStorage.getItem('finance_use_mock_api') === 'true';
+const apiUrl = localStorage.getItem('finance_api_url') || 'http://localhost:8001/api/v1';
 
 function getHeaders() {
   const token = localStorage.getItem('token');
@@ -75,7 +75,12 @@ export const api = {
             localStorage.removeItem('token');
             window.location.reload();
         }
-        throw new Error("Error en el servidor al obtener datos");
+        let errorMsg = "Error en el servidor al obtener datos";
+        try {
+          const errJson = await respuesta.json();
+          if (errJson && errJson.detail) errorMsg = errJson.detail;
+        } catch (e) {}
+        throw new Error(errorMsg);
       }
       return await respuesta.json();
     }
@@ -101,7 +106,14 @@ export const api = {
         headers: getHeaders(),
         body: JSON.stringify(nuevaTx)
       });
-      if (!respuesta.ok) throw new Error("Error al crear en el servidor");
+      if (!respuesta.ok) {
+        let errorMsg = "Error al crear en el servidor";
+        try {
+          const errJson = await respuesta.json();
+          if (errJson && errJson.detail) errorMsg = errJson.detail;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
       return await respuesta.json();
     }
   },
@@ -128,7 +140,14 @@ export const api = {
         headers: getHeaders(),
         body: JSON.stringify(datosActualizados)
       });
-      if (!respuesta.ok) throw new Error("Error al actualizar en el servidor");
+      if (!respuesta.ok) {
+        let errorMsg = "Error al actualizar en el servidor";
+        try {
+          const errJson = await respuesta.json();
+          if (errJson && errJson.detail) errorMsg = errJson.detail;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
       return await respuesta.json();
     }
   },
@@ -146,7 +165,14 @@ export const api = {
         method: 'DELETE',
         headers: getHeaders()
       });
-      if (!respuesta.ok) throw new Error("Error al eliminar en el servidor");
+      if (!respuesta.ok) {
+        let errorMsg = "Error al eliminar en el servidor";
+        try {
+          const errJson = await respuesta.json();
+          if (errJson && errJson.detail) errorMsg = errJson.detail;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
       return { success: true };
     }
   },

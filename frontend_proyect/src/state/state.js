@@ -59,7 +59,14 @@ export async function login(username, password) {
     await cargarEstado();
     cambiarVista('dashboard');
   } catch (err) {
-    alert(err.message);
+    console.error("Login error:", err);
+    const errorEl = document.getElementById('auth-error');
+    if (errorEl) {
+      errorEl.textContent = err.message || "Credenciales incorrectas o error de conexión.";
+      errorEl.classList.remove('hidden');
+    } else {
+      alert(err.message);
+    }
   } finally {
     state.isLoading = false;
     actualizarUI();
@@ -74,7 +81,14 @@ export async function register(username, password) {
     alert("Registrado correctamente, ahora inicia sesión.");
     cambiarVista('login');
   } catch (err) {
-    alert(err.message);
+    console.error("Register error:", err);
+    const errorEl = document.getElementById('auth-error');
+    if (errorEl) {
+      errorEl.textContent = err.message || "Error al registrar el usuario.";
+      errorEl.classList.remove('hidden');
+    } else {
+      alert(err.message);
+    }
   } finally {
     state.isLoading = false;
     actualizarUI();
@@ -115,8 +129,14 @@ export async function actualizarCalculos() {
 }
 
 // Función para cambiar de vista activa
-export function cambiarVista(nombreVista) {
+// skipHistory = true cuando se navega con los botones atrás/adelante del navegador
+export function cambiarVista(nombreVista, skipHistory = false) {
   state.activeView = nombreVista;
+  if (!skipHistory) {
+    // Agrega la vista al historial del navegador usando hash
+    const url = `${window.location.pathname}#${nombreVista}`;
+    window.history.pushState({ vista: nombreVista }, '', url);
+  }
   actualizarUI();
 }
 

@@ -36,6 +36,13 @@ window.navegarA = function(nombreVista) {
   cambiarVista(nombreVista);
 };
 
+window.iconoTemaSvg = function() {
+  const esOscuro = document.documentElement.classList.contains('dark');
+  return esOscuro 
+    ? `<svg class="w-5 h-5 text-amber-450 transition-all duration-300 transform hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>`
+    : `<svg class="w-5 h-5 text-indigo-600 transition-all duration-300 transform hover:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`;
+};
+
 window.alternarTema = function() {
   const html = document.documentElement;
   if (html.classList.contains('dark')) {
@@ -67,10 +74,14 @@ window.cerrarMobileSidebar = function() {
   }
 };
 
-// Función para renderizar el Sidebar (Menú lateral)
-function renderizarSidebar(activeView) {
+//// Función para renderizar el Sidebar (Menú lateral)
+function renderizarSidebar(appState) {
   const container = document.getElementById('sidebar-container');
   if (!container) return;
+
+  const activeView = appState.activeView;
+  const username = appState.user ? appState.user.username : 'Usuario';
+  const inicial = username.charAt(0).toUpperCase();
 
   const items = [
     { id: 'dashboard', label: 'Dashboard', iconPath: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' },
@@ -83,19 +94,19 @@ function renderizarSidebar(activeView) {
   const itemsHtml = items.map(item => {
     const esActivo = item.id === activeView;
     const clasesCSS = esActivo
-      ? 'bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 font-semibold'
-      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200';
+      ? 'bg-gradient-to-r from-primary-500/10 to-indigo-500/5 text-primary-600 dark:text-primary-400 font-semibold border-l-4 border-primary-600 dark:border-primary-550 pl-3'
+      : 'text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/40 hover:text-slate-900 dark:hover:text-slate-200 pl-4 border-l-4 border-transparent';
     
     return `
       <li>
         <button 
           onclick="navegarA('${item.id}')"
-          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 text-left ${clasesCSS}"
+          class="w-full flex items-center gap-3 py-3 rounded-r-xl transition-all duration-200 text-left cursor-pointer focus:outline-none ${clasesCSS}"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${item.iconPath}"/>
           </svg>
-          <span>${item.label}</span>
+          <span class="text-sm">${item.label}</span>
         </button>
       </li>
     `;
@@ -105,30 +116,30 @@ function renderizarSidebar(activeView) {
   container.innerHTML = `
     <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800/60">
       <div class="flex items-center gap-2.5">
-        <span class="p-2 bg-primary-600 dark:bg-primary-500 rounded-xl text-white shadow-md shadow-primary-500/10">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="p-2 bg-gradient-to-tr from-primary-650 to-indigo-650 rounded-xl text-white shadow-md shadow-primary-500/10">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </span>
-        <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 bg-clip-text text-transparent">FinanzaFlow</span>
+        <span class="text-lg font-black bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 bg-clip-text text-transparent tracking-tight">FinanzaFlow</span>
       </div>
-      <button onclick="cerrarMobileSidebar()" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg md:hidden text-slate-500 dark:text-slate-400">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button onclick="cerrarMobileSidebar()" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg md:hidden text-slate-500 dark:text-slate-400 cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
 
-    <nav class="flex-1 px-4 py-6 overflow-y-auto">
-      <ul class="space-y-1.5">
+    <nav class="flex-1 pr-4 py-6 overflow-y-auto">
+      <ul class="space-y-1">
         ${itemsHtml}
       </ul>
     </nav>
 
     <div class="p-4 border-t border-slate-200 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/10">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md">
-          J
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-primary-500/10 text-sm capitalize">
+          ${inicial}
         </div>
         <div class="min-w-0 flex-1">
-          <h4 class="text-sm font-semibold truncate">Juan</h4>
-          <p class="text-xs text-slate-500 dark:text-slate-400 truncate">Estudiante / SM</p>
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate capitalize leading-tight">${username}</h4>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate tracking-wide uppercase font-semibold">Financista</p>
         </div>
       </div>
     </div>
@@ -136,52 +147,53 @@ function renderizarSidebar(activeView) {
 }
 
 // Función para renderizar el Navbar (Barra superior)
-function renderizarNavbar(summary) {
+function renderizarNavbar(appState) {
   const container = document.getElementById('navbar-container');
   if (!container) return;
 
+  const summary = appState.summary;
+  const username = appState.user ? appState.user.username : 'Usuario';
   const isNegative = summary.netBalance < 0;
   const colorClase = isNegative 
-    ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-450' 
-    : 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/50 dark:text-emerald-400';
+    ? 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/35 dark:text-rose-400' 
+    : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/35 dark:text-emerald-400';
 
-  const esOscuro = document.documentElement.classList.contains('dark');
-  const iconoTema = esOscuro 
-    ? `<svg class="w-5.5 h-5.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>`
-    : `<svg class="w-5.5 h-5.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`;
+  const iconoTema = window.iconoTemaSvg();
 
   container.className = "flex items-center justify-between px-4 md:px-8 h-16 flex-shrink-0 z-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/60 w-full";
   container.innerHTML = `
     <div class="flex items-center gap-4">
-      <button onclick="abrirMobileSidebar()" class="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60 md:hidden focus:outline-none">
+      <button onclick="abrirMobileSidebar()" class="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900/60 md:hidden focus:outline-none cursor-pointer">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       
       <div class="hidden sm:block">
-        <h2 class="text-sm font-medium text-slate-500 dark:text-slate-400">Bienvenido de nuevo,</h2>
-        <h1 class="text-lg font-bold text-slate-950 dark:text-white leading-tight">Hola, Juan</h1>
+        <h2 class="text-xs font-semibold text-slate-450 dark:text-slate-400 tracking-wider uppercase">FinanzaFlow Panel</h2>
+        <h1 class="text-base font-bold text-slate-950 dark:text-white leading-tight capitalize flex items-center gap-1.5">
+          Hola, ${username} <span class="animate-wave inline-block">👋</span>
+        </h1>
       </div>
     </div>
 
     <div class="flex items-center gap-3 sm:gap-4 ml-auto">
-      <div class="flex items-center gap-2 border px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all duration-200 ${colorClase}">
-        <span class="w-2 h-2 rounded-full ${isNegative ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
-        <span class="hidden xs:inline">Balance:</span>
+      <div class="flex items-center gap-2 border px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all duration-200 ${colorClase}">
+        <span class="w-1.5 h-1.5 rounded-full ${isNegative ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
+        <span class="hidden xs:inline text-[10px] uppercase tracking-wider">Balance:</span>
         <span>${formatearMoneda(summary.netBalance, summary.currency)}</span>
       </div>
 
-      <button onclick="navegarA('transactions')" class="p-2 bg-primary-600 hover:bg-primary-500 text-white rounded-full shadow-lg shadow-primary-500/10 hover:shadow-primary-500/25 transition-all focus:outline-none active:scale-95">
+      <button onclick="navegarA('transactions')" class="p-2 bg-gradient-to-tr from-primary-650 to-indigo-650 hover:from-primary-600 hover:to-indigo-600 text-white rounded-xl shadow-md shadow-primary-500/10 hover:shadow-primary-500/25 transition-all focus:outline-none active:scale-95 cursor-pointer" title="Añadir Movimiento">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
       </button>
 
       <span class="w-px h-6 bg-slate-200 dark:bg-slate-800 hidden xs:block"></span>
 
-      <button onclick="alternarTema()" class="p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60 rounded-xl transition-all focus:outline-none active:scale-95">
+      <button onclick="alternarTema()" class="p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900/60 rounded-xl transition-all focus:outline-none active:scale-95 cursor-pointer">
         ${iconoTema}
       </button>
 
-      <button onclick="logout()" class="relative p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60 rounded-xl transition-all focus:outline-none active:scale-95" title="Cerrar Sesión">
-        <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      <button onclick="logout()" class="relative p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900/60 rounded-xl transition-all focus:outline-none active:scale-95 cursor-pointer" title="Cerrar Sesión">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
       </button>
     </div>
   `;
@@ -200,13 +212,14 @@ function redibujarInterfaz(appState) {
   }
 
   // 2. Renderizar Sidebar y Navbar
-  renderizarSidebar(appState.activeView);
-  renderizarNavbar(appState.summary);
+  renderizarSidebar(appState);
+  renderizarNavbar(appState);
 
   // Guard para rutas privadas
   const rutasPublicas = ['landing', 'login', 'register'];
   if (!rutasPublicas.includes(appState.activeView) && !appState.token) {
-    cambiarVista('login');
+    // skipHistory=true: la redirección forzada por auth NO debe crear entrada en el historial
+    cambiarVista('login', true);
     return;
   }
 
@@ -258,7 +271,60 @@ function redibujarInterfaz(appState) {
 document.addEventListener('DOMContentLoaded', () => {
   // Registrar el callback de refresco del estado para que llame a redibujarInterfaz
   registrarCallbackUI(redibujarInterfaz);
-  
-  // Cargar datos
+
+  const RUTAS_VALIDAS = ['landing', 'login', 'register', 'dashboard', 'transactions', 'reports', 'recommendations', 'settings'];
+  const RUTAS_PUBLICAS = ['landing', 'login', 'register'];
+
+  // --- Historia del navegador (botones Atrás / Adelante) ---
+  window.addEventListener('popstate', (event) => {
+    let vista = null;
+
+    if (event.state && event.state.vista) {
+      // Estado guardado por nosotros con pushState / replaceState
+      vista = event.state.vista;
+    } else {
+      // Fallback: leer el hash de la URL
+      vista = window.location.hash.replace('#', '');
+    }
+
+    if (vista && RUTAS_VALIDAS.includes(vista)) {
+      // Guard de auth: si la vista es privada y no hay sesión, ir a login sin agregar historial
+      if (!RUTAS_PUBLICAS.includes(vista) && !state.token) {
+        cambiarVista('login', true);
+        return;
+      }
+      // skipHistory = true para no volver a hacer pushState (el navegador ya movió la URL)
+      cambiarVista(vista, true);
+    }
+  });
+
+  // ── FIX PRINCIPAL ──────────────────────────────────────────────────────────
+  // Cuando la app carga, el navegador tiene UNA entrada vacía en su historial
+  // (la URL original sin hash). Si solo hacemos pushState en cada navegación,
+  // al presionar ⬅️ desde la primera vista el navegador regresa a esa entrada
+  // vacía: event.state=null, hash='', nada funciona y el botón queda bloqueado.
+  //
+  // La solución: REEMPLAZAR esa entrada vacía con la vista inicial usando
+  // replaceState. Así el historial parte desde una entrada conocida.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Determinar vista inicial (puede venir del hash de la URL en una recarga)
+  let vistaInicial = state.activeView; // valor por defecto del state
+  const hashInicial = window.location.hash.replace('#', '');
+  if (hashInicial && RUTAS_VALIDAS.includes(hashInicial)) {
+    if (RUTAS_PUBLICAS.includes(hashInicial) || localStorage.getItem('token')) {
+      vistaInicial = hashInicial;
+      state.activeView = vistaInicial;
+    }
+  }
+
+  // Reemplazar la entrada vacía del historial con la vista inicial real
+  window.history.replaceState(
+    { vista: vistaInicial },
+    '',
+    `${window.location.pathname}#${vistaInicial}`
+  );
+
+  // Cargar datos (dispara el primer render)
   cargarEstado();
 });
