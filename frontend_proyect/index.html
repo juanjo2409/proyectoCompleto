@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es" class="h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>FinanzaFlow | Gestión de Finanzas Personales</title>
+    <meta name="description" content="Toma el control de tu dinero con FinanzaFlow. Registra tus ingresos y gastos, visualiza gráficos estadísticos y obtén recomendaciones de ahorro personalizadas." />
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+      // Inicializar el tema oscuro según la preferencia del usuario en LocalStorage o sistema operativo
+      if (
+        localStorage.getItem('theme') === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+  <body class="h-full overflow-hidden text-slate-800 dark:text-slate-200 font-sans">
+    
+    <!-- Contenedor Público (Landing / Auth) -->
+    <div id="app-public" class="w-screen h-screen overflow-y-auto hidden">
+        <div id="public-viewport" class="min-h-full"></div>
+    </div>
+
+    <!-- Estructura de la SPA (Privada) -->
+    <div id="app-private" class="flex h-screen w-screen overflow-hidden hidden">
+      <!-- El sidebar se renderiza aquí -->
+      <aside id="sidebar-container" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full transition-transform duration-300 md:translate-x-0 md:static md:z-auto md:w-64 flex-shrink-0"></aside>
+      
+      <!-- Overlay para cerrar el sidebar en móviles -->
+      <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm hidden md:hidden"></div>
+
+      <!-- Contenedor del contenido principal -->
+      <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <!-- El navbar se renderiza aquí -->
+        <header id="navbar-container" class="flex-shrink-0 h-16 border-b border-slate-200 dark:border-slate-800 bg-white/75 dark:bg-slate-950/75 backdrop-blur-md z-20"></header>
+        
+        <!-- Viewport principal donde cambian las vistas -->
+        <main id="view-container" class="flex-1 overflow-y-auto px-4 py-6 md:p-8 space-y-6 relative focus:outline-none">
+          <!-- Spinner de carga global -->
+          <div id="global-loader" class="absolute inset-0 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-sm z-30 flex items-center justify-center transition-opacity duration-200 opacity-0 pointer-events-none">
+            <div class="flex flex-col items-center space-y-3">
+              <svg class="animate-spin h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Actualizando datos financieros...</span>
+            </div>
+          </div>
+          
+          <!-- Contenido de la vista activa -->
+          <div id="view-content" class="h-full"></div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Sistema de Notificaciones Toast -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
