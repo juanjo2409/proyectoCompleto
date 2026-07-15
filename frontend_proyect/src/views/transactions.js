@@ -90,28 +90,25 @@ window.guardarMovimiento = async function(e) {
   }
 };
 
-window.cambiarModalCategorias = function() {
+window.cambiarModalCategorias = function(valorPrevio = '') {
   const form = document.getElementById('tx-form');
   if (!form) return;
-  const tipo = form.querySelector('input[name="tx-type"]:checked').value;
-  const select = form.querySelector('#tx-category');
-  
-  const grupoIngresos = select.querySelector('.income-opt-group');
-  const grupoGastos = select.querySelector('.expense-opt-group');
 
-  if (tipo === 'income') {
-    grupoIngresos.disabled = false;
-    grupoGastos.disabled = true;
-    if (grupoGastos.querySelector(`option[value="${select.value}"]`)) {
-      select.value = "";
-    }
-  } else {
-    grupoIngresos.disabled = true;
-    grupoGastos.disabled = false;
-    if (grupoIngresos.querySelector(`option[value="${select.value}"]`)) {
-      select.value = "";
-    }
-  }
+  const checked = form.querySelector('input[name="tx-type"]:checked');
+  if (!checked) return;
+  const tipo = checked.value;
+
+  const select = form.querySelector('#tx-category');
+  if (!select) return;
+
+  const categorias = state.settings.categories;
+  const opciones = tipo === 'income' ? categorias.income : categorias.expense;
+
+  // Reconstruir las opciones del select con solo las categorías del tipo actual
+  select.innerHTML = `<option value="" disabled selected>Selecciona una categoría</option>`
+    + opciones.map(c =>
+        `<option value="${c}" ${c === valorPrevio ? 'selected' : ''}>${c}</option>`
+      ).join('');
 };
 
 // Generar el modal HTML de forma dinámica en el DOM con animación y blur
@@ -166,13 +163,11 @@ function renderizarModal(tx = null) {
           <div>
             <label for="tx-category" class="form-label-custom">Categoría</label>
             <select id="tx-category" name="tx-category" class="form-input-custom cursor-pointer" required>
-              <option value="" disabled selected>Selecciona una opción</option>
-              <optgroup label="Ingresos" class="income-opt-group">
-                ${categorias.income.map(c => `<option value="${c}" ${isEdit && tx.category === c ? 'selected' : ''}>${c}</option>`).join('')}
-              </optgroup>
-              <optgroup label="Gastos" class="expense-opt-group">
-                ${categorias.expense.map(c => `<option value="${c}" ${isEdit && tx.category === c ? 'selected' : ''}>${c}</option>`).join('')}
-              </optgroup>
+              <option value="" disabled selected>Selecciona una categoría</option>
+              ${(isEdit
+                  ? (tx.type === 'income' ? categorias.income : categorias.expense)
+                  : categorias.income
+                ).map(c => `<option value="${c}" ${isEdit && tx.category === c ? 'selected' : ''}>${c}</option>`).join('')}
             </select>
           </div>
 
@@ -193,7 +188,8 @@ function renderizarModal(tx = null) {
   `;
 
   document.body.insertAdjacentHTML('beforeend', modalHtml);
-  window.cambiarModalCategorias(); // Ajustar el select inicial
+  // Pasar la categoría actual al inicializar el select para que quede bien seleccionada en edición
+  window.cambiarModalCategorias(isEdit ? tx.category : '');
 }
 
 // Filtra y renderiza la lista de transacciones usando un layout grid responsive premium (cards en mobile, tabla estructurada en desktop)
